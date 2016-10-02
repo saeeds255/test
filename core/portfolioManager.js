@@ -120,73 +120,43 @@ Manager.prototype.getBalance = function(fund) {
 // is this a infinityOrderExchange (does it support order
 // requests bigger then the current balance?)
 Manager.prototype.trade = function(what) {
-  if(what !== 'BUY' && what !== 'SELL')
+  var buyprice1, buyprice2, buyprice3, sellprice1, sellprice2, sellprice3;
+  if(what !== 'BUY1' && what !== 'BUY2' && what !== 'BUY3' && what !== 'SELL1' && what !== 'SELL2' && what !== 'SELL3')
     return;
 
   this.action = what;
 
   var act = function() {
-    var amount, price;
-
-    if(what === 'BUY') {
+    var amount, buyprice1, buyprice2, buyprice3, sellprice1, sellprice2, sellprice3;
+    buyprice1 = this.ticker.ask - 4;
+    buyprice2 = this.ticker.ask - 8;
+    buyprice3 = this.ticker.ask - 12;
+    sellprice1 = buyprice1 + 4;
+    sellprice2 = buyprice2 + 4;
+    sellprice3 = buyprice3 + 4;
+    if(what === 'BUY1') {
 
       // do we need to specify the amount we want to buy?
       if(this.infinityOrderExchange)
         amount = 10000;
       else
-        amount = this.getBalance(this.currency) / this.ticker.ask;
+        //amount = this.getBalance(this.currency) / this.ticker.ask;
+        amount = 0.01;
 
       // can we just create a MKT order?
       if(this.directExchange)
-        price = false;
+        buyprice1 = false;
       else
-        price = this.ticker.ask;
-
-      this.buy(amount, price);
-
-    } else if(what === 'SELL') {
-
-      // do we need to specify the amount we want to sell?
-      if(this.infinityOrderExchange)
-        amount = 10000;
-      else
-        amount = this.getBalance(this.asset);
-
-      // can we just create a MKT order?
-      if(this.directExchange)
-        price = false;
-      else
-        price = this.ticker.bid;
-
-      this.sell(amount, price);
-    }
-  };
-  async.series([
-    this.setTicker,
-    this.setPortfolio
-  ], _.bind(act, this));
-
-};
-
-Manager.prototype.getMinimum = function(price) {
-  if(this.minimalOrder.unit === 'currency')
-    return minimum = this.minimalOrder.amount / price;
-  else
-    return minimum = this.minimalOrder.amount;
-};
-
-// first do a quick check to see whether we can buy
-// the asset, if so BUY and keep track of the order
-// (amount is in asset quantity)
-Manager.prototype.buy = function(amount, price) {
-  // sometimes cex.io specifies a price w/ > 8 decimals
-  price *= 100000000;
-  price = Math.floor(price);
-  price /= 100000000;
+        buyprice1 = this.ticker.ask - 4;
+      //*********************************************************************************************************
+      //**********************************************
+  buyprice1 *= 100000000;
+  buyprice1 = Math.floor(buyprice1);
+  buyprice1 /= 100000000;
 
   var currency = this.getFund(this.currency);
-  var minimum = this.getMinimum(price);
-  var available = this.getBalance(this.currency) / price;
+  var minimum = this.getMinimum(buyprice1);
+  var available = this.getBalance(this.currency) / buyprice1;
 
   // if not sufficient funds
   if(amount > available) {
@@ -218,23 +188,161 @@ Manager.prototype.buy = function(amount, price) {
     'at',
     this.exchange.name
   );
-  this.exchange.buy(amount, price, this.noteOrder);
-};
+      //**********************************************
+      //*********************************************************************************************************
+      //this.buy(amount, price);
+      this.exchange.buy(amount, buyprice1, this.noteOrder1);
 
-// first do a quick check to see whether we can sell
-// the asset, if so SELL and keep track of the order
-// (amount is in asset quantity)
-Manager.prototype.sell = function(amount, price) {
-  // sometimes cex.io specifies a price w/ > 8 decimals
-  price *= 100000000;
-  price = Math.ceil(price);
-  price /= 100000000;
+    }
+    
+    
+    else if(what === 'BUY2') {
 
-  var minimum = this.getMinimum(price);
+      // do we need to specify the amount we want to buy?
+      if(this.infinityOrderExchange)
+        amount = 10000;
+      else
+        //amount = this.getBalance(this.currency) / this.ticker.ask;
+        amount = 0.01;
+
+      // can we just create a MKT order?
+      if(this.directExchange)
+        buyprice2 = false;
+      else
+        buyprice2 = this.ticker.ask - 8;
+      //*********************************************************************************************************
+      //**********************************************
+  buyprice2 *= 100000000;
+  buyprice2 = Math.floor(buyprice2);
+  buyprice2 /= 100000000;
+
+  var currency = this.getFund(this.currency);
+  var minimum = this.getMinimum(buyprice2);
+  var available = this.getBalance(this.currency) / buyprice2;
+
+  // if not sufficient funds
+  if(amount > available) {
+    return log.info(
+      'Wanted to buy but insufficient',
+      this.currency,
+      '(' + available.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  // if order to small
+  if(amount < minimum) {
+    return log.info(
+      'Wanted to buy',
+      this.asset,
+      'but the amount is too small',
+      '(' + amount.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  log.info(
+    'Attempting to BUY',
+    amount,
+    this.asset,
+    'at',
+    this.exchange.name
+  );
+      //**********************************************
+      //*********************************************************************************************************
+      //this.buy(amount, price);
+      this.exchange.buy(amount, buyprice2, this.noteOrder2);
+
+    }
+    
+    
+    else if(what === 'BUY3') {
+
+      // do we need to specify the amount we want to buy?
+      if(this.infinityOrderExchange)
+        amount = 10000;
+      else
+        //amount = this.getBalance(this.currency) / this.ticker.ask;
+        amount = 0.01;
+
+      // can we just create a MKT order?
+      if(this.directExchange)
+        buyprice3 = false;
+      else
+        buyprice3 = this.ticker.ask - 12;
+      //*********************************************************************************************************
+      //**********************************************
+  buyprice3 *= 100000000;
+  buyprice3 = Math.floor(buyprice3);
+  buyprice3 /= 100000000;
+
+  var currency = this.getFund(this.currency);
+  var minimum = this.getMinimum(buyprice3);
+  var available = this.getBalance(this.currency) / buyprice3;
+
+  // if not sufficient funds
+  if(amount > available) {
+    return log.info(
+      'Wanted to buy but insufficient',
+      this.currency,
+      '(' + available.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  // if order to small
+  if(amount < minimum) {
+    return log.info(
+      'Wanted to buy',
+      this.asset,
+      'but the amount is too small',
+      '(' + amount.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  log.info(
+    'Attempting to BUY',
+    amount,
+    this.asset,
+    'at',
+    this.exchange.name
+  );
+      //**********************************************
+      //*********************************************************************************************************
+      //this.buy(amount, price);
+      this.exchange.buy(amount, buyprice3, this.noteOrder3);
+
+    }
+    
+    
+    else if(what === 'SELL1') {
+
+      // do we need to specify the amount we want to sell?
+      if(this.infinityOrderExchange)
+        amount = 10000;
+      else
+        //amount = this.getBalance(this.asset);
+        amount = 0.01;
+
+      // can we just create a MKT order?
+      //if(this.directExchange)
+      // price = false;
+      //else
+        //price = this.ticker.bid;
+  sellprice1 *= 100000000;
+  sellprice1 = Math.ceil(sellprice1);
+  sellprice1 /= 100000000;
+
+  var minimum = this.getMinimum(sellprice1);
   var availabe = this.getBalance(this.asset);
 
   // if not suficient funds
-  if(amount < availabe) {
+  if(amount > availabe) {
     return log.info(
       'Wanted to buy but insufficient',
       this.asset,
@@ -263,15 +371,198 @@ Manager.prototype.sell = function(amount, price) {
     'at',
     this.exchange.name
   );
-  this.exchange.sell(amount, price, this.noteOrder);
+  this.exchange.sell(amount, sellprice1, this.noteOrder4);
+  };
+    
+    
+    
+    else if(what === 'SELL2') {
+
+      // do we need to specify the amount we want to sell?
+      if(this.infinityOrderExchange)
+        amount = 10000;
+      else
+        //amount = this.getBalance(this.asset);
+        amount = 0.01;
+
+      // can we just create a MKT order?
+      //if(this.directExchange)
+      // price = false;
+      //else
+        //price = this.ticker.bid;
+  sellprice2 *= 100000000;
+  sellprice2 = Math.ceil(sellprice2);
+  sellprice2 /= 100000000;
+
+  var minimum = this.getMinimum(sellprice2);
+  var availabe = this.getBalance(this.asset);
+
+  // if not suficient funds
+  if(amount > availabe) {
+    return log.info(
+      'Wanted to buy but insufficient',
+      this.asset,
+      '(' + availabe.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  // if order to small
+  if(amount < minimum) {
+    return log.info(
+      'Wanted to buy',
+      this.currency,
+      'but the amount is to small',
+      '(' + amount.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  log.info(
+    'Attempting to SELL',
+    amount,
+    this.asset,
+    'at',
+    this.exchange.name
+  );
+  this.exchange.sell(amount, sellprice2, this.noteOrder5);
+  };
+    
+    
+    
+    else if(what === 'SELL3') {
+
+      // do we need to specify the amount we want to sell?
+      if(this.infinityOrderExchange)
+        amount = 10000;
+      else
+        //amount = this.getBalance(this.asset);
+        amount = 0.01;
+
+      // can we just create a MKT order?
+      //if(this.directExchange)
+      // price = false;
+      //else
+        //price = this.ticker.bid;
+  sellprice3 *= 100000000;
+  sellprice3 = Math.ceil(sellprice2);
+  sellprice3 /= 100000000;
+
+  var minimum = this.getMinimum(sellprice3);
+  var availabe = this.getBalance(this.asset);
+
+  // if not suficient funds
+  if(amount > availabe) {
+    return log.info(
+      'Wanted to buy but insufficient',
+      this.asset,
+      '(' + availabe.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  // if order to small
+  if(amount < minimum) {
+    return log.info(
+      'Wanted to buy',
+      this.currency,
+      'but the amount is to small',
+      '(' + amount.toFixed(12) + ')',
+      'at',
+      this.exchange.name
+    );
+  }
+
+  log.info(
+    'Attempting to SELL',
+    amount,
+    this.asset,
+    'at',
+    this.exchange.name
+  );
+  this.exchange.sell(amount, sellprice3, this.noteOrder6);
+  };
+    
+    
+    
+  async.series([
+    this.setTicker,
+    this.setPortfolio
+  ], _.bind(act, this));
+
 };
 
-Manager.prototype.noteOrder = function(err, order) {
-  this.order = order;
+Manager.prototype.getMinimum = function(price) {
+  if(this.minimalOrder.unit === 'currency')
+    return minimum = this.minimalOrder.amount / price;
+  else
+    return minimum = this.minimalOrder.amount;
+};
+
+// first do a quick check to see whether we can buy
+// the asset, if so BUY and keep track of the order
+// (amount is in asset quantity)
+//*****************************************************************************************************************************
+//***********************************************************
+//Manager.prototype.buy = function(amount, price) {
+  // sometimes cex.io specifies a price w/ > 8 decimals
+
+  //this.exchange.buy(amount, price, this.noteOrder);
+//};
+//***********************************************************
+//*****************************************************************************************************************************
+
+// first do a quick check to see whether we can sell
+// the asset, if so SELL and keep track of the order
+// (amount is in asset quantity)
+//Manager.prototype.sell = function(amount, price) {
+  // sometimes cex.io specifies a price w/ > 8 decimals
+
+//};
+
+//*****************************************************************************************************************************
+//***********************************************************
+Manager.prototype.noteOrder1 = function(err, order1) {
+  this.order1 = order1;
   // if after 1 minute the order is still there
   // we cancel and calculate & make a new one
   setTimeout(this.checkOrder, util.minToMs(1));
 };
+  Manager.prototype.noteOrder2 = function(err, order2) {
+  this.order2 = order2;
+  // if after 1 minute the order is still there
+  // we cancel and calculate & make a new one
+  setTimeout(this.checkOrder, util.minToMs(1));
+};
+  Manager.prototype.noteOrder3 = function(err, order3) {
+  this.order3 = order3;
+  // if after 1 minute the order is still there
+  // we cancel and calculate & make a new one
+  setTimeout(this.checkOrder, util.minToMs(1));
+};
+  Manager.prototype.noteOrder4 = function(err, order4) {
+  this.order4 = order4;
+  // if after 1 minute the order is still there
+  // we cancel and calculate & make a new one
+  setTimeout(this.checkOrder, util.minToMs(1));
+};
+  Manager.prototype.noteOrder5 = function(err, order5) {
+  this.order5 = order5;
+  // if after 1 minute the order is still there
+  // we cancel and calculate & make a new one
+  setTimeout(this.checkOrder, util.minToMs(1));
+};
+  Manager.prototype.noteOrder6 = function(err, order6) {
+  this.order6 = order6;
+  // if after 1 minute the order is still there
+  // we cancel and calculate & make a new one
+  setTimeout(this.checkOrder, util.minToMs(1));
+};
+//***********************************************************
+//*****************************************************************************************************************************
 
 // check whether the order got fully filled
 // if it is not: cancel & instantiate a new order
