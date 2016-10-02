@@ -121,9 +121,10 @@ Trader.prototype.checkOrder = function(order_id, callback) {
         sell: '\x1b[31mSOLD\x1b[0m ',
         buy: '\x1b[32mBOUGHT\x1b[0m ',
       }
-
+      var ack = true;
       log.info(color[result.orders[0].type],
         result.orders[0].amount, ' @ ', result.orders[0].price);
+      return ack;
     }
   }
 
